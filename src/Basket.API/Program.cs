@@ -5,7 +5,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
-var serviceName = "Basket.API";
+var serviceName = "BasketService";
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource

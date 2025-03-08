@@ -16,7 +16,7 @@ public class BasketService(
     {
 
         using var activity = activitySource.StartActivity("GetBasket", ActivityKind.Server);
-
+        
         var userId = context.GetUserIdentity();
         if (string.IsNullOrEmpty(userId))
         {
@@ -24,7 +24,7 @@ public class BasketService(
             return new();
         }
 
-        activity?.SetTag("basket.user_id", userId);
+        activity.SetTag("basket.user_id", userId);
 
         if (logger.IsEnabled(LogLevel.Debug))
         {
