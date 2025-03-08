@@ -1,7 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
 using eShop.Basket.API.Repositories;
-using eShop.Basket.API.Extensions;
 using eShop.Basket.API.Model;
+using System.Diagnostics.CodeAnalysis;
 
 namespace eShop.Basket.API.Grpc;
 
@@ -9,14 +9,22 @@ public class BasketService(
     IBasketRepository repository,
     ILogger<BasketService> logger) : Basket.BasketBase
 {
+    private static readonly ActivitySource activitySource = new("BasketService");
+
     [AllowAnonymous]
     public override async Task<CustomerBasketResponse> GetBasket(GetBasketRequest request, ServerCallContext context)
     {
+
+        using var activity = activitySource.StartActivity("GetBasket", ActivityKind.Server);
+
         var userId = context.GetUserIdentity();
         if (string.IsNullOrEmpty(userId))
         {
+            activity?.SetStatus(ActivityStatusCode.Error, "User not authenticated");
             return new();
         }
+
+        activity?.SetTag("basket.user_id", userId);
 
         if (logger.IsEnabled(LogLevel.Debug))
         {
@@ -27,19 +35,28 @@ public class BasketService(
 
         if (data is not null)
         {
+            activity?.SetStatus(ActivityStatusCode.Ok);
             return MapToCustomerBasketResponse(data);
         }
+
+        activity?.SetStatus(ActivityStatusCode.Error, "Basket not found");
 
         return new();
     }
 
     public override async Task<CustomerBasketResponse> UpdateBasket(UpdateBasketRequest request, ServerCallContext context)
     {
+        using var activity = activitySource.StartActivity("UpdateBasket", ActivityKind.Server);
+
         var userId = context.GetUserIdentity();
         if (string.IsNullOrEmpty(userId))
         {
             ThrowNotAuthenticated();
         }
+
+        activity?.SetTag("basket.user_id", userId);
+        activity?.SetTag("basket.item_count", request.Items.Count);
+        activity?.SetTag("basket.timestamp", DateTime.UtcNow);
 
         if (logger.IsEnabled(LogLevel.Debug))
         {
@@ -48,10 +65,14 @@ public class BasketService(
 
         var customerBasket = MapToCustomerBasket(userId, request);
         var response = await repository.UpdateBasketAsync(customerBasket);
+
         if (response is null)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, "Basket not found");
             ThrowBasketDoesNotExist(userId);
         }
+
+        activity?.SetStatus(ActivityStatusCode.Ok);
 
         return MapToCustomerBasketResponse(response);
     }
