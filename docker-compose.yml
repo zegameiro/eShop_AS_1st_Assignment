@@ -1,5 +1,15 @@
 services:
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - monitoring
+
   jaeger:
     image: jaegertracing/all-in-one:latest
     container_name: jaeger
@@ -23,6 +33,20 @@ services:
       - grafana-data:/var/lib/grafana
     depends_on:
       - jaeger
+      - otel-collector
+      - prometheus
+    networks:
+      - monitoring
+
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector-config.yml"]
+    volumes:
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+    ports:
+      - "4316:4316"
+      - "8889:8889"
     networks:
       - monitoring
 

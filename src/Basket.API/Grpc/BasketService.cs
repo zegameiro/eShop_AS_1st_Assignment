@@ -2,6 +2,7 @@
 using eShop.Basket.API.Repositories;
 using eShop.Basket.API.Model;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 
 namespace eShop.Basket.API.Grpc;
 
@@ -10,6 +11,14 @@ public class BasketService(
     ILogger<BasketService> logger) : Basket.BasketBase
 {
     private static readonly ActivitySource activitySource = new("BasketService");
+    private static readonly Meter meter = new("BasketService");
+
+    private static readonly Counter<long> getBasketCounter = meter.CreateCounter<long>("basket.get_basket.count");
+    private static readonly Counter<long> updateBasketCounter = meter.CreateCounter<long>("basket.update_basket.count");
+    private static readonly Counter<long> updateBasketItemsAddedCounter = meter.CreateCounter<long>("basket.update_basket.items_added");
+    private static readonly Counter<long> updateBasketErrorsCounter = meter.CreateCounter<long>("basket.update_basket.errors.count");
+    private static readonly Counter<long> getBasketErrorsCounter = meter.CreateCounter<long>("basket.get_basket.errors.count");
+    private static readonly Counter<long> deleteBasketCounter = meter.CreateCounter<long>("basket.delete_basket.count");
 
     [AllowAnonymous]
     public override async Task<CustomerBasketResponse> GetBasket(GetBasketRequest request, ServerCallContext context)
@@ -21,6 +30,7 @@ public class BasketService(
         if (string.IsNullOrEmpty(userId))
         {
             activity?.SetStatus(ActivityStatusCode.Error, "User not authenticated");
+            getBasketErrorsCounter.Add(1);
             return new();
         }
 
@@ -32,6 +42,7 @@ public class BasketService(
         }
 
         var data = await repository.GetBasketAsync(userId);
+        getBasketCounter.Add(1);
 
         if (data is not null)
         {
@@ -39,7 +50,7 @@ public class BasketService(
             return MapToCustomerBasketResponse(data);
         }
 
-        activity?.SetStatus(ActivityStatusCode.Error, "Basket not found");
+        activity?.SetStatus(ActivityStatusCode.Ok, "Basket Empty");
 
         return new();
     }
@@ -65,10 +76,13 @@ public class BasketService(
 
         var customerBasket = MapToCustomerBasket(userId, request);
         var response = await repository.UpdateBasketAsync(customerBasket);
+        updateBasketCounter.Add(1);
+        updateBasketItemsAddedCounter.Add(request.Items.Count);
 
         if (response is null)
         {
             activity?.SetStatus(ActivityStatusCode.Error, "Basket not found");
+            updateBasketErrorsCounter.Add(1);
             ThrowBasketDoesNotExist(userId);
         }
 
@@ -86,6 +100,7 @@ public class BasketService(
         }
 
         await repository.DeleteBasketAsync(userId);
+        deleteBasketCounter.Add(1);
         return new();
     }
 

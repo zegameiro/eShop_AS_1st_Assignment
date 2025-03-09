@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using OpenTelemetry.Exporter;
+﻿using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -20,7 +19,18 @@ builder.Services.AddOpenTelemetry()
         {
             opt.Endpoint = new Uri("http://localhost:4317");
             opt.Protocol = OtlpExportProtocol.Grpc;
-        }));
+        }))
+    .WithMetrics(metricsProviderBuilder =>
+    {
+        metricsProviderBuilder
+            .AddAspNetCoreInstrumentation()
+            .AddMeter(serviceName)
+            .AddOtlpExporter(opt => 
+            {
+                opt.Endpoint = new Uri("http://localhost:4316");
+                opt.Protocol = OtlpExportProtocol.Grpc;
+            });
+    });
     
 
 builder.AddBasicServiceDefaults();
