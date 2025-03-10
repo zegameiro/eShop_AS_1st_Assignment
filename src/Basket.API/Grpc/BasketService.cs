@@ -13,12 +13,10 @@ public class BasketService(
     private static readonly ActivitySource activitySource = new("BasketService");
     private static readonly Meter meter = new("BasketService");
 
-    private static readonly Counter<long> getBasketCounter = meter.CreateCounter<long>("basket.get_basket.count");
-    private static readonly Counter<long> updateBasketCounter = meter.CreateCounter<long>("basket.update_basket.count");
-    private static readonly Counter<long> updateBasketItemsAddedCounter = meter.CreateCounter<long>("basket.update_basket.items_added");
-    private static readonly Counter<long> updateBasketErrorsCounter = meter.CreateCounter<long>("basket.update_basket.errors.count");
-    private static readonly Counter<long> getBasketErrorsCounter = meter.CreateCounter<long>("basket.get_basket.errors.count");
-    private static readonly Counter<long> deleteBasketCounter = meter.CreateCounter<long>("basket.delete_basket.count");
+    private static readonly Counter<long> addToBasketCounter = meter.CreateCounter<long>("basket.add_to_basket.count");
+    private static readonly Counter<long> addToBasketItemsAddedCounter = meter.CreateCounter<long>("basket.add_to_basket.items_added");
+    private static readonly Counter<long> addToBasketErrorsCounter = meter.CreateCounter<long>("basket.add_to_basket.errors.count");
+    private static readonly Histogram<double> addToBasketDurationHistogram = meter.CreateHistogram<double>("basket.add_to_basket.duration", "milliseconds");
 
     [AllowAnonymous]
     public override async Task<CustomerBasketResponse> GetBasket(GetBasketRequest request, ServerCallContext context)
@@ -27,14 +25,17 @@ public class BasketService(
         using var activity = activitySource.StartActivity("GetBasket", ActivityKind.Server);
         
         var userId = context.GetUserIdentity();
+        Console.WriteLine("User ID: " + userId);
         if (string.IsNullOrEmpty(userId))
         {
+            Console.WriteLine("User not authenticated");
             activity?.SetStatus(ActivityStatusCode.Error, "User not authenticated");
-            getBasketErrorsCounter.Add(1);
+            activity?.AddEvent(new ActivityEvent("ERROR: User not authenticated, time: ", DateTime.UtcNow));
             return new();
         }
 
         activity.SetTag("basket.user_id", userId);
+        activity.SetTag("basket.access_time", DateTime.UtcNow);
 
         if (logger.IsEnabled(LogLevel.Debug))
         {
@@ -42,12 +43,12 @@ public class BasketService(
         }
 
         var data = await repository.GetBasketAsync(userId);
-        getBasketCounter.Add(1);
 
         if (data is not null)
         {
-            activity?.SetStatus(ActivityStatusCode.Ok);
-            return MapToCustomerBasketResponse(data);
+            activity?.SetStatus(ActivityStatusCode.Ok, "Basket found with success");
+            activity?.AddEvent(new ActivityEvent("SUCCESS: Basket found with success, time: ", DateTime.UtcNow));
+            return MapToCustomerBasketResponse(data, activity);
         }
 
         activity?.SetStatus(ActivityStatusCode.Ok, "Basket Empty");
@@ -59,36 +60,47 @@ public class BasketService(
     {
         using var activity = activitySource.StartActivity("UpdateBasket", ActivityKind.Server);
 
+        var startTime = Stopwatch.StartNew();
+
         var userId = context.GetUserIdentity();
         if (string.IsNullOrEmpty(userId))
         {
+            activity?.SetStatus(ActivityStatusCode.Error, "User not authenticated");
+            activity?.AddEvent(new ActivityEvent("ERROR (UpdateBasket): User not authenticated, time: ", DateTime.UtcNow));
+            addToBasketErrorsCounter.Add(1);
             ThrowNotAuthenticated();
         }
 
         activity?.SetTag("basket.user_id", userId);
-        activity?.SetTag("basket.item_count", request.Items.Count);
-        activity?.SetTag("basket.timestamp", DateTime.UtcNow);
+        activity?.SetTag("basket.access_time", DateTime.UtcNow);
 
         if (logger.IsEnabled(LogLevel.Debug))
         {
             logger.LogDebug("Begin UpdateBasket call from method {Method} for basket id {Id}", context.Method, userId);
         }
 
-        var customerBasket = MapToCustomerBasket(userId, request);
+        var customerBasket = MapToCustomerBasket(userId, request, activity);
         var response = await repository.UpdateBasketAsync(customerBasket);
-        updateBasketCounter.Add(1);
-        updateBasketItemsAddedCounter.Add(request.Items.Count);
 
         if (response is null)
         {
             activity?.SetStatus(ActivityStatusCode.Error, "Basket not found");
-            updateBasketErrorsCounter.Add(1);
+            activity?.AddEvent(new ActivityEvent("ERROR (UpdateBasket): Basket not found, time: ", DateTime.UtcNow));
+            addToBasketErrorsCounter.Add(1);
             ThrowBasketDoesNotExist(userId);
         }
 
-        activity?.SetStatus(ActivityStatusCode.Ok);
+        startTime.Stop();
+        var duration = startTime.ElapsedMilliseconds;
 
-        return MapToCustomerBasketResponse(response);
+        addToBasketCounter.Add(1);
+        addToBasketItemsAddedCounter.Add(request.Items.Count);
+        addToBasketDurationHistogram.Record(duration);
+
+        activity?.SetStatus(ActivityStatusCode.Ok);
+        activity?.AddEvent(new ActivityEvent("SUCCESS: Basket updated with success, time: ", DateTime.UtcNow));
+
+        return MapToCustomerBasketResponse(response, activity);
     }
 
     public override async Task<DeleteBasketResponse> DeleteBasket(DeleteBasketRequest request, ServerCallContext context)
@@ -100,7 +112,6 @@ public class BasketService(
         }
 
         await repository.DeleteBasketAsync(userId);
-        deleteBasketCounter.Add(1);
         return new();
     }
 
@@ -110,7 +121,7 @@ public class BasketService(
     [DoesNotReturn]
     private static void ThrowBasketDoesNotExist(string userId) => throw new RpcException(new Status(StatusCode.NotFound, $"Basket with buyer id {userId} does not exist"));
 
-    private static CustomerBasketResponse MapToCustomerBasketResponse(CustomerBasket customerBasket)
+    private static CustomerBasketResponse MapToCustomerBasketResponse(CustomerBasket customerBasket, Activity activity)
     {
         var response = new CustomerBasketResponse();
 
@@ -121,16 +132,20 @@ public class BasketService(
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
             });
+
+            string eve = $"Updated item {item.ProductId} to {item.Quantity}";
+            activity.AddEvent(new ActivityEvent(eve));
         }
 
         return response;
     }
 
-    private static CustomerBasket MapToCustomerBasket(string userId, UpdateBasketRequest customerBasketRequest)
+    private static CustomerBasket MapToCustomerBasket(string userId, UpdateBasketRequest customerBasketRequest, Activity activity)
     {
+
         var response = new CustomerBasket
         {
-            BuyerId = userId
+            BuyerId = userId    
         };
 
         foreach (var item in customerBasketRequest.Items)
@@ -140,6 +155,9 @@ public class BasketService(
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
             });
+
+            string tag = $"basket.item.{item.ProductId}";
+            activity.SetTag(tag, item.Quantity);
         }
 
         return response;
