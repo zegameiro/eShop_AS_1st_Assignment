@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using eShop.WebAppComponents.Catalog;
 using eShop.WebAppComponents.Services;
+using System.Diagnostics;
 
 namespace eShop.WebApp.Services;
 
@@ -14,6 +15,7 @@ public class BasketState(
 {
     private Task<IReadOnlyCollection<BasketItem>>? _cachedBasket;
     private HashSet<BasketStateChangedSubscription> _changeSubscriptions = new();
+    private static readonly ActivitySource activitySource = new("BasketState");
 
     public Task DeleteBasketAsync()
         => basketService.DeleteBasketAsync();
@@ -34,6 +36,9 @@ public class BasketState(
     {
         var items = (await FetchBasketItemsAsync()).Select(i => new BasketQuantity(i.ProductId, i.Quantity)).ToList();
         bool found = false;
+
+        using var activity = activitySource.StartActivity("AddAsync", ActivityKind.Internal);
+        activity?.AddEvent(new ActivityEvent("Adding a new Item to the Basket (request sent from frontend)"));
         for (var i = 0; i < items.Count; i++)
         {
             var existing = items[i];

@@ -1,7 +1,35 @@
-﻿using eShop.WebApp.Components;
-using eShop.ServiceDefaults;
+﻿using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
+var serviceName = "WebApp";
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource
+        .AddService(serviceName))
+    .WithTracing(tracerProviderBuilder => tracerProviderBuilder
+        .AddAspNetCoreInstrumentation()
+        .AddGrpcClientInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddSource(serviceName)
+        .AddOtlpExporter(opt =>
+        {
+            opt.Endpoint = new Uri("http://localhost:4317");
+            opt.Protocol = OtlpExportProtocol.Grpc;
+        }))
+    .WithMetrics(metricsProviderBuilder =>
+    {
+        metricsProviderBuilder
+            .AddAspNetCoreInstrumentation()
+            .AddMeter(serviceName)
+            .AddOtlpExporter(opt => 
+            {
+                opt.Endpoint = new Uri("http://localhost:4316");
+                opt.Protocol = OtlpExportProtocol.Grpc;
+            });
+    });
 
 builder.AddServiceDefaults();
 
