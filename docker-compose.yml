@@ -29,8 +29,10 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ADMIN_USER=admin
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
     volumes:
-      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
     depends_on:
       - jaeger
       - otel-collector
@@ -54,6 +56,3 @@ services:
 networks:
   monitoring:
     driver: bridge
-
-volumes:
-  grafana-data:
