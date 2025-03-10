@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Diagnostics;
+using System.Text.Json.Serialization;
 using eShop.Basket.API.Model;
 
 namespace eShop.Basket.API.Repositories;
@@ -6,6 +7,7 @@ namespace eShop.Basket.API.Repositories;
 public class RedisBasketRepository(ILogger<RedisBasketRepository> logger, IConnectionMultiplexer redis) : IBasketRepository
 {
     private readonly IDatabase _database = redis.GetDatabase();
+    private static readonly ActivitySource activitySource = new("BasketService");
 
     // implementation:
 
@@ -36,12 +38,15 @@ public class RedisBasketRepository(ILogger<RedisBasketRepository> logger, IConne
         var json = JsonSerializer.SerializeToUtf8Bytes(basket, BasketSerializationContext.Default.CustomerBasket);
         var created = await _database.StringSetAsync(GetBasketKey(basket.BuyerId), json);
 
+        using var activity = activitySource.StartActivity("AddToRedisDB", ActivityKind.Internal);
+
         if (!created)
         {
             logger.LogInformation("Problem occurred persisting the item.");
             return null;
         }
 
+        activity.AddEvent(new ActivityEvent("Basket item persisted successfully."));
 
         logger.LogInformation("Basket item persisted successfully.");
         return await GetBasketAsync(basket.BuyerId);
