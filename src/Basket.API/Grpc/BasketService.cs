@@ -25,16 +25,14 @@ public class BasketService(
         using var activity = activitySource.StartActivity("GetBasket", ActivityKind.Server);
         
         var userId = context.GetUserIdentity();
-        Console.WriteLine("User ID: " + userId);
         if (string.IsNullOrEmpty(userId))
         {
-            Console.WriteLine("User not authenticated");
             activity?.SetStatus(ActivityStatusCode.Error, "User not authenticated");
             activity?.AddEvent(new ActivityEvent("ERROR: User not authenticated, time: ", DateTime.UtcNow));
             return new();
         }
 
-        activity.SetTag("basket.user_id", userId);
+        activity.SetTag("user.id", userId);
         activity.SetTag("basket.access_time", DateTime.UtcNow);
 
         if (logger.IsEnabled(LogLevel.Debug))
@@ -47,7 +45,7 @@ public class BasketService(
         if (data is not null)
         {
             activity?.SetStatus(ActivityStatusCode.Ok, "Basket found with success");
-            activity?.AddEvent(new ActivityEvent("SUCCESS: Basket found with success, time: ", DateTime.UtcNow));
+            activity?.AddEvent(new ActivityEvent("SUCCESS: Basket found with success"));
             return MapToCustomerBasketResponse(data, activity);
         }
 
@@ -66,12 +64,12 @@ public class BasketService(
         if (string.IsNullOrEmpty(userId))
         {
             activity?.SetStatus(ActivityStatusCode.Error, "User not authenticated");
-            activity?.AddEvent(new ActivityEvent("ERROR (UpdateBasket): User not authenticated, time: ", DateTime.UtcNow));
+            activity?.AddEvent(new ActivityEvent("ERROR (UpdateBasket): User not authenticated"));
             addToBasketErrorsCounter.Add(1);
             ThrowNotAuthenticated();
         }
 
-        activity?.SetTag("basket.user_id", userId);
+        activity?.SetTag("user.id", userId);
         activity?.SetTag("basket.access_time", DateTime.UtcNow);
 
         if (logger.IsEnabled(LogLevel.Debug))
@@ -85,7 +83,7 @@ public class BasketService(
         if (response is null)
         {
             activity?.SetStatus(ActivityStatusCode.Error, "Basket not found");
-            activity?.AddEvent(new ActivityEvent("ERROR (UpdateBasket): Basket not found, time: ", DateTime.UtcNow));
+            activity?.AddEvent(new ActivityEvent("ERROR (UpdateBasket): Basket not found"));
             addToBasketErrorsCounter.Add(1);
             ThrowBasketDoesNotExist(userId);
         }
@@ -94,11 +92,10 @@ public class BasketService(
         var duration = startTime.ElapsedMilliseconds;
 
         addToBasketCounter.Add(1);
-        addToBasketItemsAddedCounter.Add(request.Items.Count);
         addToBasketDurationHistogram.Record(duration);
 
         activity?.SetStatus(ActivityStatusCode.Ok);
-        activity?.AddEvent(new ActivityEvent("SUCCESS: Basket updated with success, time: ", DateTime.UtcNow));
+        activity?.AddEvent(new ActivityEvent("SUCCESS: Basket updated with success"));
 
         return MapToCustomerBasketResponse(response, activity);
     }
@@ -155,7 +152,7 @@ public class BasketService(
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
             });
-
+            addToBasketItemsAddedCounter.Add(item.Quantity);
             string tag = $"basket.item.{item.ProductId}";
             activity.SetTag(tag, item.Quantity);
         }

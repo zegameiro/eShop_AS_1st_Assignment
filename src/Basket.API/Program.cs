@@ -11,6 +11,7 @@ builder.Services.AddOpenTelemetry()
         .AddService(serviceName))
     .WithTracing(tracerProviderBuilder => tracerProviderBuilder
         .AddAspNetCoreInstrumentation()
+        .AddProcessor(new MaskingActivityProcessor())
         .AddGrpcClientInstrumentation()
         .AddHttpClientInstrumentation()
         .AddSqlClientInstrumentation()
