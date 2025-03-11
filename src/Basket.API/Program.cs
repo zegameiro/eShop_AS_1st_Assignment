@@ -11,6 +11,7 @@ builder.Services.AddOpenTelemetry()
         .AddService(serviceName))
     .WithTracing(tracerProviderBuilder => tracerProviderBuilder
         .AddAspNetCoreInstrumentation()
+        // .AddProcessor(new MaskingActivityProcessor()) Masking the user ID is not required but the code is provided for reference
         .AddGrpcClientInstrumentation()
         .AddHttpClientInstrumentation()
         .AddSqlClientInstrumentation()

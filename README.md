@@ -1,142 +1,100 @@
-# eShop Reference Application - "AdventureWorks"
+# AS First Individual Assignment
 
-A reference .NET application implementing an e-commerce website using a services-based architecture using [.NET Aspire](https://learn.microsoft.com/dotnet/aspire/).
+## Objective
 
-![eShop Reference Application architecture diagram](img/eshop_architecture.png)
+-​ Implement OpenTelemetry tracing on a single feature or use-case (end-to-end).
+- Mask or exclude sensitive data (e.g., email, payment details) from telemetry and logs.
+- Set up a basic Grafana dashboard to visualize the traces and metrics.
+- (Optional Extras) Explore data encryption and compliance in the database layer and introduce column masking for sensitive data.
 
-![eShop homepage screenshot](img/eshop_homepage.png)
+## Features Implemented
 
-## Getting Started
+The selected feature for this assignment was add an item to the basket.
 
-This version of eShop is based on .NET 9. 
+1. **Open Telemetry Tracing**: The feature was instrumented with OpenTelemetry to trace the flow of the operation. Instrumented all the layers of the application (API, Service, Repository, and Web Application) to capture the trace and span information. Used custom activity sources for more detailed information.
 
-Previous eShop versions:
-* [.NET 8](https://github.com/dotnet/eShop/tree/release/8.0)
+2. **Data Scrubbing**: No sensitive data was used between the services. However, a class to mask the userID was implemented to show how sensitive data can be scrubbed from the traces.
+
+3. **Tech Stack**: The application was built using .NET 9.0.103. The OpenTelemetry SDK was used to instrument the traces and metrics of the application. Jaeger was used as the tracing backend. An Otel Collector was used to collect the traces and metrics and send them to Prometheus. Grafana was used to visualize the traces and metrics.
+
+## Architecture
+
+![Architecture](./img/AS_Individual_Assignment_architecture.png)
+
+### Key Components:
+
+- WebApp & Basket.API & Catalog.API – These are application services that handle user requests and business logic.
+
+- Cache DB – A caching layer that speeds up data retrieval for Basket.API.
+
+- Metrics & Metrics Collector – Metrics are gathered from services and stored in a Metrics DB.
+
+- Traces – Each service generates traces (detailed request logs) that are sent to a distributed tracing observability platform.
+
+- Distributed Tracing Platform – Aggregates traces from different services to analyze request flows.
+
+- Visualization and Monitoring Solution – Provides dashboards and insights using collected metrics and traces.
+
+### Workflow:
+
+1. The user sends a request to add an item to the basket.
+2. The WebApp sends a request to the Basket.API.
+3. The Basket.API sends a request to the Catalog.API to get the item details.
+4. The Catalog.API sends the item details to the Basket.API.
+5. The Basket.API sends the item details to the WebApp.
+6. The WebApp displays the item details to the user.
+
+## How to Run
 
 ### Prerequisites
 
-- Clone the eShop repository: https://github.com/dotnet/eshop
-- [Install & start Docker Desktop](https://docs.docker.com/engine/install/)
+- [.NET 9 SDK](https://dot.net/download?cid=eshop)
+- [Docker](https://docs.docker.com/engine/install/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
-#### Windows with Visual Studio
-- Install [Visual Studio 2022 version 17.10 or newer](https://visualstudio.microsoft.com/vs/).
-  - Select the following workloads:
-    - `ASP.NET and web development` workload.
-    - `.NET Aspire SDK` component in `Individual components`.
-    - Optional: `.NET Multi-platform App UI development` to run client apps
+### Steps
 
-Or
+1. Clone the repository:
 
-- Run the following commands in a Powershell & Terminal running as `Administrator` to automatically configure your environment with the required tools to build and run this application. (Note: A restart is required and included in the script below.)
-
-```powershell
-install-Module -Name Microsoft.WinGet.Configuration -AllowPrerelease -AcceptLicense -Force
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-get-WinGetConfiguration -file .\.configurations\vside.dsc.yaml | Invoke-WinGetConfiguration -AcceptConfigurationAgreements
+```bash
+git clone
 ```
 
-Or
+2. Open another terminal at the root of the project and run the following command to start the observability services:
 
-- From Dev Home go to `Machine Configuration -> Clone repositories`. Enter the URL for this repository. In the confirmation screen look for the section `Configuration File Detected` and click `Run File`.
-
-#### Mac, Linux, & Windows without Visual Studio
-- Install the latest [.NET 9 SDK](https://dot.net/download?cid=eshop)
-
-Or
-
-- Run the following commands in a Powershell & Terminal running as `Administrator` to automatically configuration your environment with the required tools to build and run this application. (Note: A restart is required after running the script below.)
-
-##### Install Visual Studio Code and related extensions
-```powershell
-install-Module -Name Microsoft.WinGet.Configuration -AllowPrerelease -AcceptLicense  -Force
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-get-WinGetConfiguration -file .\.configurations\vscode.dsc.yaml | Invoke-WinGetConfiguration -AcceptConfigurationAgreements
+```bash
+docker-compose up --build # it can also be docker compose instead of docker-compose depending on the version
 ```
 
-> Note: These commands may require `sudo`
+3. Open one terminal at the root of the project and run the following command to start the application:
 
-- Optional: Install [Visual Studio Code with C# Dev Kit](https://code.visualstudio.com/docs/csharp/get-started)
-- Optional: Install [.NET MAUI Workload](https://learn.microsoft.com/dotnet/maui/get-started/installation?tabs=visual-studio-code)
-
-> Note: When running on Mac with Apple Silicon (M series processor), Rosetta 2 for grpc-tools. 
-
-### Running the solution
-
-> [!WARNING]
-> Remember to ensure that Docker is started
-
-* (Windows only) Run the application from Visual Studio:
- - Open the `eShop.Web.slnf` file in Visual Studio
- - Ensure that `eShop.AppHost.csproj` is your startup project
- - Hit Ctrl-F5 to launch Aspire
-
-* Or run the application from your terminal:
-```powershell
+```bash
 dotnet run --project src/eShop.AppHost/eShop.AppHost.csproj
 ```
-then look for lines like this in the console output in order to find the URL to open the Aspire dashboard:
-```sh
+
+4. In the terminal where the application is running, you will see the following line in the logs if the application is running successfully, you should click on it and navigate to the link of the web app:
+
+```bash
 Login to the dashboard at: http://localhost:19888/login?t=uniquelogincodeforyou
 ```
 
-> You may need to install ASP.NET Core HTTPS development certificates first, and then close all browser tabs. Learn more at https://aka.ms/aspnet/https-trust-dev-cert
+![Aspire Dashboard](./img/aspire_dashboard.png)
 
-### Azure Open AI
+5. To see the traces in Jaeger, navigate to [http://localhost:16686](http://localhost:16686) and select the service you want to see the traces for.
 
-When using Azure OpenAI, inside *eShop.AppHost/appsettings.json*, add the following section:
+![Jaeger UI](./img/jaeger_ui.png)
 
-```json
-  "ConnectionStrings": {
-    "OpenAi": "Endpoint=xxx;Key=xxx;"
-  }
-```
+6. To see the metrics in Prometheus, navigate to [http://localhost:9090](http://localhost:9090) to explore the available metrics.
 
-Replace the values with your own. Then, in the eShop.AppHost *Program.cs*, set this value to **true**
+![Prometheus UI](./img/ui.png)
 
-```csharp
-bool useOpenAI = false;
-```
+![Prometheus Metrics](./img/prometheus_ui_metrics.png)
 
-Here's additional guidance on the [.NET Aspire OpenAI component](https://learn.microsoft.com/dotnet/aspire/azureai/azureai-openai-component?tabs=dotnet-cli). 
+7. To see the Grafana dashboard, navigate to [http://localhost:3000](http://localhost:3000) and login with the default credentials (admin/admin). You first need to add the datasources for Jaeger and Prometheus, for this just navigate to the "Add new connection" tab, select jaeger and prometheus and assign to each one a connection link, http://jaeger:16686/ and http://prometheus:9090/ .You can import the dashboard from the file `BasketDashboard.json` located in the directory `grafana/dashboards/BasketDashboard.json`. If everything is set up correctly, you should see the traces and metrics in the Grafana dashboard. (If not data is shown, navigate to each dashboard and click on the refresh button and after it save the dashboard);
 
-### Use Azure Developer CLI
+![Metrics Dashboard](./img/metrics_visualizations.png)
 
-You can use the [Azure Developer CLI](https://aka.ms/azd) to run this project on Azure with only a few commands. Follow the next instructions:
+![Traces Dashboard](./img/traces_visualizations.png)
 
-- Install the latest or update to the latest [Azure Developer CLI (azd)](https://aka.ms/azure-dev/install).
-- Log in `azd` (if you haven't done it before) to your Azure account:
-```sh
-azd auth login
-```
-- Initialize `azd` from the root of the repo.
-```sh
-azd init
-```
-- During init:
-  - Select `Use code in the current directory`. Azd will automatically detect the .NET Aspire project.
-  - Confirm `.NET (Aspire)` and continue.
-  - Select which services to expose to the Internet (exposing `webapp` is enough to test the sample).
-  - Finalize the initialization by giving a name to your environment.
+8. To start seeing data in the dashboard simply add an item to the basket and you will see the traces and metrics in the Grafana dashboard.
 
-- Create Azure resources and deploy the sample by running:
-```sh
-azd up
-```
-Notes:
-  - The operation takes a few minutes the first time it is ever run for an environment.
-  - At the end of the process, `azd` will display the `url` for the webapp. Follow that link to test the sample.
-  - You can run `azd up` after saving changes to the sample to re-deploy and update the sample.
-  - Report any issues to [azure-dev](https://github.com/Azure/azure-dev/issues) repo.
-  - [FAQ and troubleshoot](https://learn.microsoft.com/azure/developer/azure-developer-cli/troubleshoot?tabs=Browser) for azd.
-
-## Contributing
-
-For more information on contributing to this repo, read [the contribution documentation](./CONTRIBUTING.md) and [the Code of Conduct](CODE-OF-CONDUCT.md).
-
-### Sample data
-
-The sample catalog data is defined in [catalog.json](https://github.com/dotnet/eShop/blob/main/src/Catalog.API/Setup/catalog.json). Those product names, descriptions, and brand names are fictional and were generated using [GPT-35-Turbo](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/chatgpt), and the corresponding [product images](https://github.com/dotnet/eShop/tree/main/src/Catalog.API/Pics) were generated using [DALL·E 3](https://openai.com/dall-e-3).
-
-## eShop on Azure
-
-For a version of this app configured for deployment on Azure, please view [the eShop on Azure](https://github.com/Azure-Samples/eShopOnAzure) repo.
