@@ -1,0 +1,648 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "fefgmptjzzwu8c"
+      },
+      "description": "Number of all the exceptions that occured with in the Web Application",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Number of Exceptions",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "aspnetcore_diagnostics_exceptions_total",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "title": "Total Exceptions Occured (Metrics)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "fefgmptjzzwu8c"
+      },
+      "description": "Rate of basket updates per 5 minutes",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-YlRd"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "series",
+            "axisLabel": "Rate",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 12,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": ["sum", "lastNotNull", "firstNotNull", "max"],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "aeffp9w4qw934c"
+          },
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "rate(basket_add_to_basket_count_total[1m])",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "title": "Rate of updates to basket (Metrics)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "fefgmptjzzwu8c"
+      },
+      "description": "Rate of items added to basket per 5 minutes",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Rate",
+            "axisPlacement": "auto",
+            "axisWidth": 50,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": ["last", "max", "firstNotNull"],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "disableTextWrap": false,
+          "editorMode": "builder",
+          "expr": "rate(basket_add_to_basket_items_added_total[1m])",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "title": "Rate of items per minute (Metrics)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "fefgmptjzzwu8c"
+      },
+      "description": "Rate of the number of errors that occur when adding a new item to the basket",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Rate",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "maxWidth": -1,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "disableTextWrap": false,
+          "editorMode": "code",
+          "expr": "rate(basket_add_to_basket_errors_count_total[1m])",
+          "fullMetaSearch": false,
+          "includeNullMetadata": true,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A",
+          "useBackend": false
+        }
+      ],
+      "title": "Error Rate in Basket Service",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "jaeger",
+        "uid": "defgmqov76e4gd"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 16,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 6,
+      "options": {
+        "spanFilters": {
+          "criticalPathOnly": false,
+          "matchesOnly": false,
+          "serviceNameOperator": "=",
+          "spanNameOperator": "=",
+          "tags": [
+            {
+              "id": "513343d4-baf",
+              "operator": "="
+            }
+          ]
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "jaeger",
+            "uid": "defgmqov76e4gd"
+          },
+          "query": "${traceId}",
+          "refId": "A",
+          "tags": ""
+        }
+      ],
+      "title": "Selected trace: ${traceId}",
+      "type": "traces"
+    },
+    {
+      "datasource": {
+        "uid": "defgmqov76e4gd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "links": [
+            {
+              "title": "Trace ID",
+              "url": "/d/eeffq1b2z42dcb/basket-items-dashboard?orgId=1&var-traceId=${__data.fields[\"traceID\"]}"
+            }
+          ],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Trace ID"
+          }
+        ]
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "queryType": "search",
+          "refId": "A",
+          "service": "WebApp",
+          "tags": "http.response.status_code=200"
+        }
+      ],
+      "title": "All the Success Traces in WebApp",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "uid": "defgmqov76e4gd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "links": [
+            {
+              "title": "Trace ID",
+              "url": "/d/eeffq1b2z42dcb/basket-items-dashboard?orgId=1&var-traceId=${__data.fields[\"traceID\"]}"
+            }
+          ],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "Trace ID"
+          }
+        ]
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "queryType": "search",
+          "refId": "A",
+          "service": "BasketService",
+          "tags": "http.response.status_code=200"
+        }
+      ],
+      "title": "All the Success Traces in BasketService",
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "5s",
+  "schemaVersion": 40,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "label": "Trace ID",
+        "name": "traceId",
+        "options": [],
+        "query": "",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Basket Items Dashboard",
+  "uid": "eeffq1b2z42dcb",
+  "version": 19,
+  "weekStart": ""
+}
