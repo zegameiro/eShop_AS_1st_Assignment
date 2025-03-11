@@ -86,7 +86,7 @@ Login to the dashboard at: http://localhost:19888/login?t=uniquelogincodeforyou
 
 6. To see the metrics in Prometheus, navigate to [http://localhost:9090](http://localhost:9090) to explore the available metrics.
 
-![Prometheus UI](./img/ui.png)
+![Prometheus UI](./img/prometheus_ui.png)
 
 ![Prometheus Metrics](./img/prometheus_ui_metrics.png)
 
