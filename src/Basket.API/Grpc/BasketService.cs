@@ -16,19 +16,18 @@ public class BasketService(
     private static readonly Counter<long> addToBasketCounter = meter.CreateCounter<long>("basket.add_to_basket.count");
     private static readonly Counter<long> addToBasketItemsAddedCounter = meter.CreateCounter<long>("basket.add_to_basket.items_added");
     private static readonly Counter<long> addToBasketErrorsCounter = meter.CreateCounter<long>("basket.add_to_basket.errors.count");
-    private static readonly Histogram<double> addToBasketDurationHistogram = meter.CreateHistogram<double>("basket.add_to_basket.duration", "milliseconds");
 
     [AllowAnonymous]
     public override async Task<CustomerBasketResponse> GetBasket(GetBasketRequest request, ServerCallContext context)
     {
 
-        using var activity = activitySource.StartActivity("GetBasket", ActivityKind.Server);
+        using var activity = activitySource.StartActivity("GetBasket", ActivityKind.Server);    
         
         var userId = context.GetUserIdentity();
         if (string.IsNullOrEmpty(userId))
         {
             activity?.SetStatus(ActivityStatusCode.Error, "User not authenticated");
-            activity?.AddEvent(new ActivityEvent("ERROR: User not authenticated, time: ", DateTime.UtcNow));
+            activity?.AddEvent(new ActivityEvent("ERROR: User not authenticated"));
             return new();
         }
 
@@ -58,8 +57,6 @@ public class BasketService(
     {
         using var activity = activitySource.StartActivity("UpdateBasket", ActivityKind.Server);
 
-        var startTime = Stopwatch.StartNew();
-
         var userId = context.GetUserIdentity();
         if (string.IsNullOrEmpty(userId))
         {
@@ -88,11 +85,7 @@ public class BasketService(
             ThrowBasketDoesNotExist(userId);
         }
 
-        startTime.Stop();
-        var duration = startTime.ElapsedMilliseconds;
-
         addToBasketCounter.Add(1);
-        addToBasketDurationHistogram.Record(duration);
 
         activity?.SetStatus(ActivityStatusCode.Ok);
         activity?.AddEvent(new ActivityEvent("SUCCESS: Basket updated with success"));
