@@ -35,6 +35,10 @@ The selected feature for this assignment was add an item to the basket.
 
 - Visualization and Monitoring Solution – Provides dashboards and insights using collected metrics and traces.
 
+### Report
+
+The report can be found [here](./docs/AS_1st_Assigment_report.pdf).
+
 ### Workflow:
 
 1. The user sends a request to add an item to the basket.
