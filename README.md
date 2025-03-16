@@ -2,7 +2,7 @@
 
 ## Objective
 
--​ Implement OpenTelemetry tracing on a single feature or use-case (end-to-end).
+- Implement OpenTelemetry tracing on a single feature or use-case (end-to-end).
 - Mask or exclude sensitive data (e.g., email, payment details) from telemetry and logs.
 - Set up a basic Grafana dashboard to visualize the traces and metrics.
 - (Optional Extras) Explore data encryption and compliance in the database layer and introduce column masking for sensitive data.
@@ -23,17 +23,17 @@ The selected feature for this assignment was add an item to the basket.
 
 ### Key Components:
 
-- WebApp & Basket.API & Catalog.API – These are application services that handle user requests and business logic.
+- **WebApp & Basket.API & Catalog.API**: These are application services that handle user requests and business logic.
 
-- Cache DB – A caching layer that speeds up data retrieval for Basket.API.
+- **Cache DB**: A caching layer that speeds up data retrieval for Basket.API.
 
-- Metrics & Metrics Collector – Metrics are gathered from services and stored in a Metrics DB.
+- **Metrics & Metrics Collector**: Metrics are gathered from services and stored in a Metrics DB.
 
-- Traces – Each service generates traces (detailed request logs) that are sent to a distributed tracing observability platform.
+- **Traces**: Each service generates traces (detailed request logs) that are sent to a distributed tracing observability platform.
 
-- Distributed Tracing Platform – Aggregates traces from different services to analyze request flows.
+- **Distributed Tracing Platform**: Aggregates traces from different services to analyze request flows.
 
-- Visualization and Monitoring Solution – Provides dashboards and insights using collected metrics and traces.
+- **Visualization and Monitoring Solution**: Provides dashboards and insights using collected metrics and traces.
 
 ### Report
 
